@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GlitchBarn - The AI Dumpster</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: black;
+      overflow-x: hidden;
+      color: #fff;
+      height: 100%;
+    }
+    .stage {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: black;
+      z-index: 10;
+      animation: backgroundFlicker 4s infinite alternate;
+    }
+    @keyframes backgroundFlicker {
+      0%, 100% { background-color: black; }
+      50% { background-color: #111; }
+    }
+    .portal {
+      width: 150px;
+      height: 150px;
+      border: 5px dashed #00e5ff;
+      border-radius: 50%;
+      animation: spin 2s linear infinite, portalPulse 2s infinite alternate;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes portalPulse {
+      0% { border-color: #00e5ff; }
+      50% { border-color: #ff00ff; }
+      100% { border-color: #00e5ff; }
+    }
+    .floating {
+      position: absolute;
+      animation: fadeFloatRotate 4s ease-in-out forwards;
+      font-size: 2rem;
+      cursor: pointer;
+      opacity: 0;
+    }
+    @keyframes fadeFloatRotate {
+      0% { opacity: 0; transform: translateY(20px) rotate(0deg) scale(1); }
+      50% { opacity: 1; transform: translateY(-10px) rotate(10deg) scale(1.2); }
+      100% { opacity: 0; transform: translateY(-60px) rotate(-10deg) scale(0.8); }
+    }
+    .sparkle {
+      position: absolute;
+      font-size: 0.8rem;
+      opacity: 0;
+      animation: sparkleMove 1.2s ease-out forwards;
+      pointer-events: none;
+    }
+    @keyframes sparkleMove {
+      0% { opacity: 1; transform: translate(0, 0) scale(1); }
+      100% { opacity: 0; transform: translate(var(--x), var(--y)) scale(0); }
+    }
+    .gallery {
+      margin-top: 50px;
+      column-count: 3;
+      column-gap: 1em;
+      padding: 2em;
+      display: none;
+      animation: galleryPop 1s ease forwards;
+    }
+    @keyframes galleryPop {
+      0% { opacity: 0; transform: scale(0.8); }
+      50% { transform: scale(1.05); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .gallery img {
+      width: 100%;
+      margin-bottom: 1em;
+      transition: transform 0.3s ease, filter 0.3s ease;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+    .gallery img:hover {
+      transform: rotate(2deg) scale(1.05);
+      filter: hue-rotate(20deg) brightness(1.2);
+    }
+    .randomize-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 15px;
+      background: #00e5ff;
+      border: none;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      display: none;
+    }
+    footer {
+      text-align: center;
+      padding: 2em;
+      font-size: 0.9rem;
+      color: #888;
+      display: none;
+      animation: shimmerText 6s infinite alternate;
+    }
+    @keyframes shimmerText {
+      0% { color: #888; }
+      50% { color: #fff; text-shadow: 0 0 5px #ff00ff, 0 0 10px #00ffff; }
+      100% { color: #888; }
+    }
+    .hidden-page {
+      display: none;
+      background: #fff;
+      padding: 2em;
+      color: #000;
+    }
+    .terminal {
+      font-family: monospace;
+      font-size: 1.2rem;
+      line-height: 1.5;
+      white-space: pre-line;
+      text-align: center;
+      position: relative;
+    }
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      height: 20px;
+      background: white;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="stage1" class="stage">
+    <div class="terminal" id="terminal"></div>
+  </div>
+
+  <div id="stage2" class="stage" style="display:none;">
+    <div class="portal"></div>
+    <button style="animation: glitchButton 2s infinite alternate;" onclick="nextStage()">Enter the Dumpster 🚪</button>
+  </div>
+
+  <div id="stage3" class="stage" style="display:none;">
+    <div class="floating" style="top: 30%; left: 10%; animation-delay: 0s;" onclick="explode(event)">🐸</div>
+    <div class="floating" style="top: 50%; left: 70%; animation-delay: 0.5s;" onclick="explode(event)">🍩</div>
+    <div class="floating" style="top: 70%; left: 30%; animation-delay: 1s;" onclick="explode(event)">🤡</div>
+    <div class="floating" style="top: 40%; left: 80%; animation-delay: 1.5s;" onclick="explode(event)">🌮</div>
+    <div class="floating" style="top: 60%; left: 20%; animation-delay: 2s;" onclick="explode(event)">🛸</div>
+  </div>
+
+  <div class="gallery" id="gallery">
+    <img src="https://placekitten.com/400/300" alt="AI Cat">
+    <img src="https://placebear.com/400/400" alt="AI Bear">
+    <img src="https://www.fillmurray.com/400/300" alt="Bill Meme">
+    <img src="https://baconmockup.com/400/300" alt="Bacon Art">
+    <img src="https://placebeard.it/400x300" alt="Beard Lord">
+    <img src="https://stevensegallery.com/400/300" alt="Segal Supreme">
+  </div>
+
+  <button class="randomize-btn" onclick="randomizeImages()">🎲</button>
+
+  <footer>
+    © 2025 GlitchBarn. All glitches preserved. No refunds. | <a href="#" onclick="revealHidden()">Behind the Dumpster 🔥</a>
+  </footer>
+
+  <div id="hiddenPage" class="hidden-page">
+    <h2>Behind the Dumpster</h2>
+    <p>"This piece explores the loneliness of soup left unattended on a rainy day."</p>
+    <p>"A visual symphony of mistakes made on a 3AM Taco Bell run."</p>
+    <p>"Inspired by a pigeon I met once."</p>
+  </div>
+
+  <script>
+    const terminalLines = [
+      '> Initializing memes...',
+      '> Uploading brain fog...',
+      '> Downloading extra regret...',
+      '> Opening the dumpster...'
+    ];
+
+    let lineIndex = 0;
+
+    function typeTerminal() {
+      if (lineIndex < terminalLines.length) {
+        document.getElementById('terminal').innerText += terminalLines[lineIndex] + '\n';
+        screenShake(200, 2);
+        lineIndex++;
+        setTimeout(typeTerminal, 1000);
+      } else {
+        document.getElementById('terminal').innerHTML += '<span class="cursor"></span>';
+        setTimeout(() => {
+          document.getElementById('stage1').style.display = 'none';
+          document.getElementById('stage2').style.display = 'flex';
+        }, 1500);
+      }
+    }
+
+    function screenShake(duration = 300, intensity = 5) {
+      const start = Date.now();
+      const interval = setInterval(() => {
+        const elapsed = Date.now() - start;
+        if (elapsed >= duration) {
+          clearInterval(interval);
+          document.body.style.transform = '';
+        } else {
+          const x = (Math.random() - 0.5) * intensity;
+          const y = (Math.random() - 0.5) * intensity;
+          document.body.style.transform = `translate(${x}px, ${y}px)`;
+        }
+      }, 50);
+    }
+
+    function nextStage() {
+      document.getElementById('stage2').style.display = 'none';
+      document.getElementById('stage3').style.display = 'flex';
+      setTimeout(() => {
+        document.getElementById('stage3').style.display = 'none';
+        document.getElementById('gallery').style.display = 'block';
+        document.querySelector('.randomize-btn').style.display = 'block';
+        document.querySelector('footer').style.display = 'block';
+      }, 4000);
+    }
+
+    function randomizeImages() {
+      const gallery = document.getElementById('gallery');
+      for (let i = gallery.children.length; i >= 0; i--) {
+        gallery.appendChild(gallery.children[Math.random() * i | 0]);
+      }
+    }
+
+    function revealHidden() {
+      const hiddenPage = document.getElementById('hiddenPage');
+      hiddenPage.style.display = hiddenPage.style.display === 'block' ? 'none' : 'block';
+      hiddenPage.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function explode(event) {
+      const x = event.clientX;
+      const y = event.clientY;
+      const emojis = ['✨','💥','🌟','🔥','💨','🚀'];
+      for (let i = 0; i < 10; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+        sparkle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        sparkle.style.left = `${x}px`;
+        sparkle.style.top = `${y}px`;
+        sparkle.style.setProperty('--x', `${(Math.random() - 0.5) * 200}px`);
+        sparkle.style.setProperty('--y', `${(Math.random() - 0.5) * 200}px`);
+        document.body.appendChild(sparkle);
+        setTimeout(() => sparkle.remove(), 1200);
+      }
+    }
+
+    typeTerminal();
+  </script>
+</body>
+</html>
